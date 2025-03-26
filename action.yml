@@ -1,0 +1,21 @@
+name: Switch Environment Variables
+description: Action to enable switching the contents of environment variables for each execution environment.
+
+inputs:
+  file:
+    description: 'env file'
+    required: true
+  env:
+    description: 'env'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Load Envs
+      uses: mikefarah/yq@master
+      with:
+        cmd: |
+          yq e '.${{ inputs.env }} | explode(.) | to_entries | .[] | .key + "=" + (.value | tostring)' {{ input.file}} | while read -r line; do
+            echo "$line" >> $GITHUB_ENV
+          done
